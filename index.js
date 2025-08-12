@@ -1,6 +1,7 @@
 const express = require("express")
 const connectDb = require("./app/connections/db")
 const router = require("./app/routes/route")
+const errorHandler = require("./app/middleware/errorHandler.middleware")
 const app = express()
 
 connectDb()
@@ -8,6 +9,8 @@ connectDb()
 app.use(express.json());
 
 app.use('/api', router)
+app.use(errorHandler);
+
 
 app.listen(3000, () => {
     console.log(`server is started on 3000 https://192.168.29.185/api`)
