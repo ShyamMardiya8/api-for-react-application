@@ -1,115 +1,114 @@
-const userInformation = require("../models/user")
-const ApiError = require("../utility/ApiError")
+const userInformation = require("../models/user");
+const asyncHandler = require("../util/asyncHandler");
+const ApiResponse = require("../utility/ApiError");
+const ApiError = require("../utility/ApiError");
+const validator = require("../validators/Field");
 
-const  GET_USER_INFORMATION = async (req, res) => {
-    const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10
-    const results = {}
+const GET_USER_INFORMATION = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
 
-    const startIndex = (page - 1) * limit
-    console.log(startIndex, "start index")
-    const endIndex = page * limit
+  const startIndex = (page - 1) * limit;
+  const value = await userInformation
+    .find()
+    .limit(limit)
+    .skip(startIndex)
+    .exec();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "fetched user Information", value));
+});
 
-    try{
-        const totalCount = await userInformation.countDocuments().exec()
+const POST_USER_INFORMATION = asyncHandler(async (req, res) => {
+  const { firstName, lastName, phoneNumber, email } = req.body;
 
-        if (endIndex < totalCount) {
-            results.next = {
-                page : page + 1,
-                limit : limit
-            }
-        }
+  const { isValid, missingFields } = validator({
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+  });
 
-        if (startIndex > 0) {
-            results.previous = {
-                page : page - 1,
-                limit : limit
-            }    
-        }
+  if (!isValid) {
+    throw new ApiError(
+      400,
+      `Sorry you missed some field(s): ${missingFields.join(", ")}`
+    );
+  }
 
-        results.userInformation = await userInformation.find().limit(limit).skip(startIndex).exec()
-        return res.status(200).json(results)
-    }
-    catch(err){
-        console.log(err.message)
-        return res.status(500).json({message : "Something wrong"})
-    }
-}
+  const userData = new userInformation({
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+  });
 
-const POST_USER_INFORMATION = async (req, res) => {
-    try {
-        const { firstName, lastName, phoneNumber, email } = req.body;
+  await userData.save();
+  return res
+    .status(201)
+    .json(new ApiResponse(201, "User Created Successfully", userData));
+});
 
-        if (!firstName || !lastName || !phoneNumber || !email) {
-            return res.status(400).json({ message: "Sorry, you have missed some field(s)" });
-        }
+const UPDATE_USER_INFORMATION = asyncHandler(async (req, res) => {
+  const { firstName, lastName, phoneNumber, email } = req.body;
+  const { id } = req.params;
+  const { isValid, missingFields } = validator({
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+  });
+  if (!isValid) {
+    throw new ApiError(
+      400,
+      `please fill missing field ${missingFields.join(", ")}`
+    );
+  }
+  const userData = {
+    firstName,
+    lastName,
+    phoneNumber,
+    email,
+  };
+  const updatedAccount = await userInformation.findByIdAndUpdate(id, userData);
+  return res
+    .status(201)
+    .json(new ApiResponse(200, "user updated successfully", updatedAccount));
+});
 
-        const userData = new userInformation({
-            firstName,
-            lastName,
-            phoneNumber,
-            email
-        });
+const DELETE_USER_INFORMATION = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  await userInformation.findByIdAndDelete(id);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "user deleted successFully"));
+});
 
-        await userData.save();
-        return res.status(201).json({ message: "User is created successfully" });
-    } catch (err) {
-        console.error(err.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+const HANDLE_SEARCH_HEADERS = asyncHandler(async (req, res) => {
+  const { name, email } = req.query;
+  if ((!name || name.trim() === "") && (!email || email.trim() === "")) {
+    throw new ApiError(400, "Search Term is required");
+  }
+
+  const query = [];
+
+  if (name) {
+    query.push({ firstName: { $regex: name, $options: "i" } });
+  }
+
+  if (email) {
+    query.push({ email: { $regex: email, $options: "i" } });
+  }
+
+  const users = await userInformation.find(query.length ? { $or: query } : {});
+
+  return res.status(202).json(new ApiResponse(200, "search Results", users));
+});
+
+module.exports = {
+  GET_USER_INFORMATION,
+  POST_USER_INFORMATION,
+  UPDATE_USER_INFORMATION,
+  DELETE_USER_INFORMATION,
+  HANDLE_SEARCH_HEADERS,
 };
-
-const UPDATE_USER_INFORMATION = async (req, res) => {
-    try{
-        const {firstName, lastName, phoneNumber, email} = req.body
-        const {id} = req.params
-        if (!firstName || !lastName || !phoneNumber || !email) {
-            return res.status(400).json({message : "Sorry you have missed some field"})
-        }
-        const userData = {
-            firstName,
-            lastName,
-            phoneNumber,
-            email
-        }
-        
-        await userInformation.findByIdAndUpdate(id, userData)
-        return res.status(201).json({message : "User is Updated"})
-    }
-    catch(err){
-        console.log(err.message)
-          return res.status(500).json({message : "Something wrong"})
-    }
-}
-
-
-const DELETE_USER_INFORMATION = async (req, res) => {
-    try{
-        const {id} = req.params
-        await userInformation.findByIdAndDelete(id)
-        return res.status(200).json({message : "User is deleted"})
-    }
-    catch(err){
-        console.log(err.message)
-        return res.status(500).json({message : "Something wrong"})
-    }
-}
-
-const HANDLE_SEARCH_HEADERS = async (req, res) => {  
-        const {name, email} = req.query
-        if ((!name || name.trim() === "") && (!email || email.trim() === "")) {
-            throw new ApiError(400, "Search Term is required");
-        }
-
-        const users = await userInformation.find({
-            $or: [
-                    {firstName : {$regex : name, $options : "i"}},
-                    {email : {$regex : email, $options : "i"}}
-            ]
-        })
-
-        return res.status(202).json(users)
-    
-}
-
-module.exports = {GET_USER_INFORMATION, POST_USER_INFORMATION, UPDATE_USER_INFORMATION, DELETE_USER_INFORMATION, HANDLE_SEARCH_HEADERS}
