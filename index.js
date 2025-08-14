@@ -2,13 +2,15 @@ const express = require("express")
 const connectDb = require("./app/connections/db")
 const router = require("./app/routes/route")
 const errorHandler = require("./app/middleware/errorHandler.middleware")
+const adminRoutes = require("./app/routes/admin.routes")
 const app = express()
 
 connectDb()
 
 app.use(express.json());
 
-app.use('/api', router)
+app.use('/api', router);
+app.use('/admin', adminRoutes)
 app.use(errorHandler);
 
 
