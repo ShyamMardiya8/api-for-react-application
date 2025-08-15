@@ -3,28 +3,32 @@ const mongoose = require("mongoose");
 const userInformationSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    require: true,
+    required: true,
     trim: true,
   },
   lastName: {
     type: String,
-    require: true,
+    required: true,
     trim: true,
   },
   phoneNumber: {
     type: String,
-    require: true,
+    required: true,
     trim: true,
   },
   email: {
     type: String,
-    require: true,
+    required: true,
     trim: true,
   },
+  type: {
+    type: String,
+    enum: ["Teacher", "Student", "Admin"],
+    required: true,
+    trim: true
+  }
 });
 
+const UserInformation = mongoose.model("UserInformation", userInformationSchema);
 
-const userInformation = mongoose.model("userInformation", userInformationSchema)
-
-
-module.exports = userInformation
+module.exports = UserInformation;
