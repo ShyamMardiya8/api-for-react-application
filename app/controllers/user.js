@@ -20,13 +20,14 @@ const GET_USER_INFORMATION = asyncHandler(async (req, res) => {
 });
 
 const POST_USER_INFORMATION = asyncHandler(async (req, res) => {
-  const { firstName, lastName, phoneNumber, email } = req.body;
+  const { firstName, lastName, phoneNumber, email, type } = req.body;
 
   const { isValid, missingFields } = validator({
     firstName,
     lastName,
     phoneNumber,
     email,
+    type,
   });
 
   if (!isValid) {
@@ -41,6 +42,7 @@ const POST_USER_INFORMATION = asyncHandler(async (req, res) => {
     lastName,
     phoneNumber,
     email,
+    type,
   });
 
   await userData.save();
@@ -105,14 +107,16 @@ const HANDLE_SEARCH_HEADERS = asyncHandler(async (req, res) => {
   return res.status(202).json(new ApiResponse(200, "search Results", users));
 });
 
-const GET_USER_INFORMATION_BY_ID = asyncHandler (async (req, res) => {
+const GET_USER_INFORMATION_BY_ID = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  const findUserByIds = await userInformation.findById(id)
+  const findUserByIds = await userInformation.findById(id);
   if (!findUserByIds) {
-    throw new ApiError(400, "user not found")
+    throw new ApiError(400, "user not found");
   }
-  return res.status(202).json(new ApiResponse(202, "user found", findUserByIds))
-})
+  return res
+    .status(202)
+    .json(new ApiResponse(202, "user found", findUserByIds));
+});
 
 module.exports = {
   GET_USER_INFORMATION,
@@ -120,5 +124,5 @@ module.exports = {
   UPDATE_USER_INFORMATION,
   DELETE_USER_INFORMATION,
   HANDLE_SEARCH_HEADERS,
-  GET_USER_INFORMATION_BY_ID
+  GET_USER_INFORMATION_BY_ID,
 };
