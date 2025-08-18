@@ -25,10 +25,17 @@ const userInformationSchema = new mongoose.Schema({
     type: String,
     enum: ["Teacher", "Student", "Admin"],
     required: true,
-    trim: true
-  }
+    trim: true,
+  },
+  file: {
+    type: Array,
+    required: true,
+  },
 });
 
-const UserInformation = mongoose.model("UserInformation", userInformationSchema);
+const UserInformation = mongoose.model(
+  "UserInformation",
+  userInformationSchema
+);
 
 module.exports = UserInformation;
