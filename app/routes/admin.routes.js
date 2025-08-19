@@ -20,7 +20,7 @@ adminRoutes.delete("/users/:id", verifyToken, appLimiter, HANDLE_USER_DELETE);
 adminRoutes.post(
   "/uploads",
   verifyToken,
-  uploads.single("file"),
+  uploads.array("file", 5),
   HANDLE_UPLOAD_DATA
 );
 

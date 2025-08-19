@@ -1,5 +1,5 @@
 const userInformation = require("../models/user");
-const asyncHandler = require("../util/asyncHandler");
+const asyncHandler = require("../utility/asyncHandler");
 const ApiError = require("../utility/ApiError");
 const ApiResponse = require("../utility/ApiResponse");
 const validator = require("../validators/Field");
