@@ -1,9 +1,9 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const checkFileType = require("../utility/checkFileType");
 
-// Always inside backend/uploads
-const uploadDir = path.join(__dirname, "uploads");
+const uploadDir = path.join(__dirname, "../../uploads");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -20,5 +20,11 @@ const storage = multer.diskStorage({
   },
 });
 
-const uploads = multer({ storage });
+const uploads = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+});
 module.exports = uploads;

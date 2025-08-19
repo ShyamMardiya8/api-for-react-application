@@ -2,6 +2,7 @@ const express = require("express");
 const connectDb = require("./app/connections/db");
 const router = require("./app/routes/users.route");
 const errorHandler = require("./app/middleware/errorHandler.middleware");
+const fs = require("fs");
 const adminRoutes = require("./app/routes/admin.routes");
 const path = require("path");
 const app = express();
@@ -12,7 +13,6 @@ app.use(express.json());
 
 app.use("/api", router);
 app.use("/admin", adminRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "./uploads/")));
 app.use(errorHandler);
 
 app.listen(3000, () => {

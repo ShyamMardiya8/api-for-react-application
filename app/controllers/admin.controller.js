@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const asyncHandler = require("../util/asyncHandler");
+const asyncHandler = require("../utility/asyncHandler");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const ApiError = require("../utility/ApiError");
@@ -147,7 +147,8 @@ const HANDLE_UPLOAD_DATA = asyncHandler(async (req, res) => {
     throw new ApiError(400, missingFieldsError);
   }
 
-  if (!req.file) {
+  console.info("🚀 ~ files:", req.files);
+  if (!req.files) {
     throw new ApiError(400, "File Upload is required");
   }
   const userData = new UserInformation({
@@ -156,7 +157,7 @@ const HANDLE_UPLOAD_DATA = asyncHandler(async (req, res) => {
     phoneNumber,
     email,
     type,
-    file: req.file.filename,
+    file: req.files,
   });
   console.info("🚀 ~ userData:", userData);
 
