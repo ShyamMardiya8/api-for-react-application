@@ -11,7 +11,9 @@ dotenv.config();
 
 const HANDLE_SIGNUP = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  console.info("🚀 ~ password:", password);
   const hashedPassword = await bcrypt.hash(password, 10);
+  console.info("🚀 ~ hashedPassword:", hashedPassword);
   const mergedData = { email, password };
   const { isValid, missingFields } = validator(mergedData);
   const missingFieldsError = missingFields.join(", ");
@@ -22,10 +24,11 @@ const HANDLE_SIGNUP = asyncHandler(async (req, res) => {
 
   const adminData = new admin({
     email,
-    hashedPassword,
+    password: hashedPassword,
   });
 
   const createdAdmin = await adminData.save();
+  console.info("🚀 ~ createdAdmin:", createdAdmin);
   // const generateToken = jwt.sign({id : createdAdmin?._id}, process.env.SECRET_KEY, {
   //     expiresIn : "1h"
   // })
@@ -41,8 +44,15 @@ const HANDLE_SIGNUP = asyncHandler(async (req, res) => {
 
 const HANDLE_LOGIN = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const findUser = await admin.findOne({ email, password });
-  console.info("🚀 ~ findUser:", findUser);
+  console.info("🚀 ~ password:", password);
+  const findUser = await admin.findOne({ email });
+  const isPasswordValid =
+    findUser && (await bcrypt?.compare(password, findUser.password));
+  // console.info("🚀 ~ isPasswordValid:", findUser);
+
+  if (!isPasswordValid) {
+    throw new ApiError(400, "Invalid credentials");
+  }
   if (!findUser) {
     throw new ApiError(400, "user not found");
   }
