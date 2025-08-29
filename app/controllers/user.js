@@ -9,7 +9,7 @@ const GET_USER_INFORMATION = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
 
   const startIndex = (page - 1) * limit;
-  const value = await userInformations
+  const value = await userInformation
     .find()
     .limit(limit)
     .skip(startIndex)
