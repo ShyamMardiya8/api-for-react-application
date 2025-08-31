@@ -5,6 +5,7 @@ const errorHandler = require("./app/middleware/errorHandler.middleware");
 const fs = require("fs");
 const adminRoutes = require("./app/routes/admin.routes");
 const path = require("path");
+const details = require("./app/routes/details.routes");
 const app = express();
 const cors = require("cors");
 const punch = require("./app/routes/attendance.route");
@@ -15,6 +16,7 @@ app.use(cors());
 app.use("/api", router);
 app.use("/admin", adminRoutes);
 app.use("/punch", punch);
+app.use("/attendance-full-details", details);
 app.use(errorHandler);
 
 app.listen(5000, () => {

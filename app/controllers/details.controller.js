@@ -5,17 +5,12 @@ const asyncHandler = require("../utility/asyncHandler");
 
 const detailsObject = {
   GET_ALL_DETAILS: asyncHandler(async (req, res) => {
+    console.log("called function");
     const { id } = req.query;
     const record = await attendanceModel
       .find(id ? { userId: id } : {})
-      .populate(
-        "userId",
-        "firstName",
-        "lastName",
-        "phoneNumber",
-        "email",
-        "type"
-      );
+      .populate("userId", "firstName lastName phoneNumber email type");
+    console.info("🚀 ~ record:", record);
     if (!record) {
       throw new ApiError(400, "user not found");
     }
