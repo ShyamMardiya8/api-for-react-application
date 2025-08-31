@@ -38,17 +38,16 @@ const attendanceObject = {
   }),
   HANDLE_CHECKOUT: asyncHandler(async (req, res) => {
     const { userId, date, checkOut } = req.body;
-    const record = attendanceModel.findOne({
+    const record = await attendanceModel.findOne({
       userId,
-      date: {
-        $gte: new Date(date).setDate(0, 0, 0, 0),
-        $lte: new Date(date).setDate(23, 59, 59, 999),
-      },
+      date,
     });
+    console.info("🚀 ~ record:", record);
     if (!record) {
       throw new ApiError(400, "no check found for today");
     }
     record.checkOut = checkOut;
+    console.info("🚀 ~ record:", record);
     if (record.checkIn) {
       const diffMs = new Date(checkOut) - new Date(record.checkIn);
       record.totalHours = diffMs / (1000 * 60 * 60);
